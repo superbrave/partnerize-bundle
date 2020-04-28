@@ -1,0 +1,14 @@
+<?php
+
+$finder = PhpCsFixer\Finder::create()
+    ->exclude('vendor')
+    ->in(__DIR__);
+
+return PhpCsFixer\Config::create()
+    ->setRules([
+        '@Symfony' => true,
+        'no_superfluous_phpdoc_tags' => false,
+        'ordered_imports' => true,
+        'single_line_throw' => false,
+    ])
+    ->setFinder($finder);

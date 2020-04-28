@@ -1,0 +1,57 @@
+services:
+    partnerize_guzzle_tracking_client:
+        class: GuzzleHttp\Client
+        arguments:
+            -   base_uri: '%partnerize.tracking_uri%'
+
+    partnerize_guzzle_api_client:
+        class: GuzzleHttp\Client
+        arguments:
+            -   base_uri: '%partnerize.base_uri%'
+                auth:
+                    - '%partnerize.application_key%'
+                    - '%partnerize.user_api_key%'
+
+    partnerize_annotation_reader:
+        class: Doctrine\Common\Annotations\AnnotationReader
+
+    partnerize_annotation_loader:
+        class: Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader
+        arguments:
+            - '@partnerize_annotation_reader'
+
+    partnerize_class_metadata_factory:
+        class: Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory
+        arguments:
+            - '@partnerize_annotation_loader'
+
+    partnerize_metadata_aware_name_converter:
+        class: Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter
+        arguments:
+            - '@partnerize_class_metadata_factory'
+
+    partnerize_object_normalizer:
+        class: Symfony\Component\Serializer\Normalizer\ObjectNormalizer
+        arguments:
+            - '@partnerize_class_metadata_factory'
+            - '@partnerize_metadata_aware_name_converter'
+
+    partnerize_date_time_normalizer:
+        class: Symfony\Component\Serializer\Normalizer\DateTimeNormalizer
+        arguments:
+            - datetime_format: 'Y-m-d H:i:s'
+
+    Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder:
+
+    partnerize_sale_serializer:
+        class: Symfony\Component\Serializer\Serializer
+        arguments:
+            - [ '@partnerize_date_time_normalizer', '@partnerize_object_normalizer' ]
+            - partnerize_s2s: '@Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder'
+
+    Superbrave\PartnerizeBundle\Client\PartnerizeClient:
+        arguments:
+            - '@partnerize_guzzle_tracking_client'
+            - '@partnerize_guzzle_api_client'
+            - '%partnerize.campaign_id%'
+            - '@partnerize_sale_serializer'

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d84bd90eadf11622c0e4ea1dd449b4a6",
+    "content-hash": "efecb7190073f3dcb2413af894eb14db",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -3453,15 +3453,11 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "symfony/config": 20,
-        "symfony/dependency-injection": 20,
-        "symfony/http-kernel": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^7.3"
+        "php": "^7.2"
     },
     "platform-dev": []
 }

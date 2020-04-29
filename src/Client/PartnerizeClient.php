@@ -14,7 +14,9 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 class PartnerizeClient
 {
-    public const STATUS_APPROVED = 'approved';
+    public const
+        STATUS_APPROVED = 'approved',
+        STATUS_REJECTED = 'rejected';
 
     /**
      * @var GuzzleClientInterface
@@ -83,13 +85,40 @@ class PartnerizeClient
     }
 
     /**
-     * Approve a conversion if an order was approved
+     * Approve a conversion.
      *
      * @param string $conversionId
      *
      * @throws ClientException
      */
     public function approveConversion(string $conversionId): void
+    {
+        $this->setConversionStatus($conversionId, self::STATUS_APPROVED);
+    }
+
+    /**
+     * Reject a conversion.
+     *
+     * @param string $conversionId
+     * @param string $reason
+     *
+     * @throws ClientException
+     */
+    public function rejectConversion(string $conversionId, string $reason): void
+    {
+        $this->setConversionStatus($conversionId, self::STATUS_REJECTED);
+    }
+
+    /**
+     * Sends the status of the conversion to partnerize
+     *
+     * @param string $conversionId
+     * @param string $status
+     * @param string $reason
+     *
+     * @throws ClientException
+     */
+    private function setConversionStatus(string $conversionId, string $status, string $reason = ''): void
     {
         try {
             $response = $this->apiClient->request(
@@ -100,8 +129,8 @@ class PartnerizeClient
                         'conversions' => [
                             [
                                 'conversion_id' => $conversionId,
-                                'status' => static::STATUS_APPROVED,
-                                'reject_reason' => '',
+                                'status' => $status,
+                                'reject_reason' => $reason,
                             ],
                         ],
                     ],

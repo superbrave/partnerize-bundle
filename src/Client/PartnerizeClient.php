@@ -2,11 +2,13 @@
 
 namespace Superbrave\PartnerizeBundle\Client;
 
+use DateTimeZone;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder;
 use Superbrave\PartnerizeBundle\Exception\ClientException;
 use Superbrave\PartnerizeBundle\Model\Sale;
+use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -72,7 +74,10 @@ class PartnerizeClient
         $sale->setTrackingMode(Sale::TRACKING_MODE_API);
         $sale->setCampaign($this->campaignId);
 
-        $s2sUri = $this->serializer->serialize($sale, PartnerizeS2SEncoder::FORMAT);
+        $context = [
+            DateTimeNormalizer::TIMEZONE_KEY => new DateTimeZone('UTC'),
+        ];
+        $s2sUri = $this->serializer->serialize($sale, PartnerizeS2SEncoder::FORMAT, $context);
         $requestUri = $this->trackingClient->getConfig('base_uri') . $s2sUri;
         try {
             $response = $this->trackingClient->request('GET', $requestUri);

@@ -207,7 +207,7 @@ class Sale
      */
     public function getConversionTime(): ?DateTime
     {
-        return $this->conversionTime;
+        return $this->conversionTime ? clone $this->conversionTime : null;
     }
 
     /**
@@ -215,7 +215,7 @@ class Sale
      */
     public function setConversionTime(?DateTime $conversionTime): void
     {
-        $this->conversionTime = $conversionTime;
+        $this->conversionTime = $conversionTime ? clone $conversionTime : null;
     }
 
     /**

@@ -7,6 +7,7 @@ use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder;
 use Superbrave\PartnerizeBundle\Exception\ClientException;
+use Superbrave\PartnerizeBundle\Model\Job;
 use Superbrave\PartnerizeBundle\Model\Sale;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -94,11 +95,12 @@ class PartnerizeClient
      *
      * @param string $conversionId
      *
+     * @return Job
      * @throws ClientException
      */
-    public function approveConversion(string $conversionId): void
+    public function approveConversion(string $conversionId): Job
     {
-        $this->setConversionStatus($conversionId, self::STATUS_APPROVED);
+        return $this->setConversionStatus($conversionId, self::STATUS_APPROVED);
     }
 
     /**
@@ -107,11 +109,12 @@ class PartnerizeClient
      * @param string $conversionId
      * @param string $reason
      *
+     * @return Job
      * @throws ClientException
      */
-    public function rejectConversion(string $conversionId, string $reason): void
+    public function rejectConversion(string $conversionId, string $reason): Job
     {
-        $this->setConversionStatus($conversionId, self::STATUS_REJECTED);
+        return $this->setConversionStatus($conversionId, self::STATUS_REJECTED);
     }
 
     /**
@@ -121,9 +124,10 @@ class PartnerizeClient
      * @param string $status
      * @param string $reason
      *
+     * @return Job
      * @throws ClientException
      */
-    private function setConversionStatus(string $conversionId, string $status, string $reason = ''): void
+    private function setConversionStatus(string $conversionId, string $status, string $reason = ''): Job
     {
         try {
             $response = $this->apiClient->request(
@@ -148,5 +152,14 @@ class PartnerizeClient
         if ($response->getStatusCode() !== 200) {
             throw new ClientException('Received bad status code (should be 200)');
         }
+
+        $json = $response->getBody()->getContents();
+        $context = [
+            DateTimeNormalizer::TIMEZONE_KEY => new DateTimeZone('UTC'),
+        ];
+        /** @var Job $job */
+        $job = $this->serializer->deserialize($json, Job::class, 'json', $context);
+
+        return $job;
     }
 }

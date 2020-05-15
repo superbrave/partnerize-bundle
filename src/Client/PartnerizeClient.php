@@ -154,11 +154,9 @@ class PartnerizeClient
         }
 
         $json = $response->getBody()->getContents();
-        $context = [
-            DateTimeNormalizer::TIMEZONE_KEY => new DateTimeZone('UTC'),
-        ];
+
         /** @var Job $job */
-        $job = $this->serializer->deserialize($json, Job::class);
+        $job = $this->serializer->deserialize($json, Job::class, 'json');
 
         return $job;
     }

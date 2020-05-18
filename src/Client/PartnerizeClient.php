@@ -136,14 +136,7 @@ class PartnerizeClient
             throw new ClientException($exception->getMessage(), 0, $exception);
         }
 
-        $this->checkStatusCode($response);
-
-        $json = $response->getBody()->getContents();
-
-        /** @var Job $job */
-        $job = $this->serializer->deserialize($json, Job::class, 'json');
-
-        return $job;
+        return $this->deserializeJob($response);
     }
 
     /**
@@ -178,14 +171,7 @@ class PartnerizeClient
             throw new ClientException($exception->getMessage(), 0, $exception);
         }
 
-        $this->checkStatusCode($response);
-
-        $json = $response->getBody()->getContents();
-
-        /** @var Response $response */
-        $response = $this->serializer->deserialize($json, Response::class, 'json');
-
-        return $response->getJob();
+        return $this->deserializeJob($response);
     }
 
     /**
@@ -198,5 +184,23 @@ class PartnerizeClient
         if ($response->getStatusCode() !== 200) {
             throw new ClientException('Received bad status code (should be 200)');
         }
+    }
+
+    /**
+     * @param ResponseInterface $response
+     *
+     * @return Job
+     * @throws ClientException
+     */
+    private function deserializeJob(ResponseInterface $response): Job
+    {
+        $this->checkStatusCode($response);
+
+        $json = $response->getBody()->getContents();
+
+        /** @var Response $response */
+        $response = $this->serializer->deserialize($json, Response::class, 'json');
+
+        return $response->getJob();
     }
 }

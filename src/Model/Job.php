@@ -2,9 +2,6 @@
 
 namespace Superbrave\PartnerizeBundle\Model;
 
-use DateTime;
-use Symfony\Component\Serializer\Annotation\SerializedName;
-
 /**
  * A job response can be deserialized into this class, though it does not contain all the properties returned by the
  * Partnerize API at this point. More properties can be added if needed in the future.
@@ -14,7 +11,6 @@ class Job
 {
     /**
      * @var string
-     * @SerializedName("job_id")
      */
     private $jobId;
 
@@ -24,21 +20,9 @@ class Job
     private $status;
 
     /**
-     * @var string
+     * @var HyperMedia
      */
-    private $response;
-
-    /**
-     * @var DateTime
-     * @SerializedName("completed_at")
-     */
-    private $completedAt;
-
-    /**
-     * @var DateTime
-     * @SerializedName("created_at")
-     */
-    private $createdAt;
+    private $hyperMedia;
 
     /**
      * @return string
@@ -73,50 +57,26 @@ class Job
     }
 
     /**
+     * @return HyperMedia
+     */
+    public function getHyperMedia(): HyperMedia
+    {
+        return $this->hyperMedia;
+    }
+
+    /**
+     * @param HyperMedia $hyperMedia
+     */
+    public function setHyperMedia(HyperMedia $hyperMedia): void
+    {
+        $this->hyperMedia = $hyperMedia;
+    }
+
+    /**
      * @return string
      */
     public function getResponse(): string
     {
-        return $this->response;
-    }
-
-    /**
-     * @param string $response
-     */
-    public function setResponse(string $response): void
-    {
-        $this->response = $response;
-    }
-
-    /**
-     * @return DateTime
-     */
-    public function getCompletedAt(): DateTime
-    {
-        return $this->completedAt;
-    }
-
-    /**
-     * @param DateTime $completedAt
-     */
-    public function setCompletedAt(DateTime $completedAt): void
-    {
-        $this->completedAt = $completedAt;
-    }
-
-    /**
-     * @return DateTime
-     */
-    public function getCreatedAt(): DateTime
-    {
-        return $this->createdAt;
-    }
-
-    /**
-     * @param DateTime $createdAt
-     */
-    public function setCreatedAt(DateTime $createdAt): void
-    {
-        $this->createdAt = $createdAt;
+        return $this->hyperMedia->getResponse();
     }
 }

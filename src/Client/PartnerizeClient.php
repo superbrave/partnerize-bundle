@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder;
 use Superbrave\PartnerizeBundle\Exception\ClientException;
 use Superbrave\PartnerizeBundle\Model\Job;
+use Superbrave\PartnerizeBundle\Model\Response;
 use Superbrave\PartnerizeBundle\Model\Sale;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -155,9 +156,9 @@ class PartnerizeClient
 
         $json = $response->getBody()->getContents();
 
-        /** @var Job $job */
-        $job = $this->serializer->deserialize($json, Job::class, 'json');
+        /** @var Response $response */
+        $response = $this->serializer->deserialize($json, Response::class, 'json');
 
-        return $job;
+        return $response->getJob();
     }
 }

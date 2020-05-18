@@ -140,6 +140,26 @@ class PartnerizeClient
     }
 
     /**
+     * @param string $id
+     *
+     * @return ResponseInterface
+     * @throws ClientException
+     */
+    public function getJobResponse(string $id): ResponseInterface
+    {
+        try {
+            $response = $this->apiClient->request(
+                'GET',
+                sprintf('job/%s/response', $id)
+            );
+        } catch (GuzzleException $exception) {
+            throw new ClientException($exception->getMessage(), 0, $exception);
+        }
+
+        return $response;
+    }
+
+    /**
      * Sends the status of the conversion to partnerize
      *
      * @param string $conversionId

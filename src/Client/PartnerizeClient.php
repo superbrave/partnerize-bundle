@@ -129,7 +129,7 @@ class PartnerizeClient
     {
         try {
             $response = $this->apiClient->request(
-                'POST',
+                'GET',
                 sprintf('job/%s', $id)
             );
         } catch (GuzzleException $exception) {

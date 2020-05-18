@@ -5,6 +5,7 @@ namespace Superbrave\PartnerizeBundle\Client;
 use DateTimeZone;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Http\Message\ResponseInterface;
 use Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder;
 use Superbrave\PartnerizeBundle\Exception\ClientException;
 use Superbrave\PartnerizeBundle\Model\Job;
@@ -119,6 +120,33 @@ class PartnerizeClient
     }
 
     /**
+     * @param string $id
+     *
+     * @return Job
+     * @throws ClientException
+     */
+    public function getJobUpdate(string $id): Job
+    {
+        try {
+            $response = $this->apiClient->request(
+                'POST',
+                sprintf('job/%s', $id)
+            );
+        } catch (GuzzleException $exception) {
+            throw new ClientException($exception->getMessage(), 0, $exception);
+        }
+
+        $this->checkStatusCode($response);
+
+        $json = $response->getBody()->getContents();
+
+        /** @var Job $job */
+        $job = $this->serializer->deserialize($json, Job::class, 'json');
+
+        return $job;
+    }
+
+    /**
      * Sends the status of the conversion to partnerize
      *
      * @param string $conversionId
@@ -150,9 +178,7 @@ class PartnerizeClient
             throw new ClientException($exception->getMessage(), 0, $exception);
         }
 
-        if ($response->getStatusCode() !== 200) {
-            throw new ClientException('Received bad status code (should be 200)');
-        }
+        $this->checkStatusCode($response);
 
         $json = $response->getBody()->getContents();
 
@@ -160,5 +186,17 @@ class PartnerizeClient
         $response = $this->serializer->deserialize($json, Response::class, 'json');
 
         return $response->getJob();
+    }
+
+    /**
+     * @param ResponseInterface $response
+     *
+     * @throws ClientException
+     */
+    private function checkStatusCode(ResponseInterface $response): void
+    {
+        if ($response->getStatusCode() !== 200) {
+            throw new ClientException('Received bad status code (should be 200)');
+        }
     }
 }

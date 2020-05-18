@@ -2,7 +2,10 @@
 
 namespace Superbrave\PartnerizeBundle\Model;
 
-use DateTime;/**
+use DateTime;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+
+/**
  * A job response can be deserialized into this class, though it does not contain all the properties returned by the
  * Partnerize API at this point. More properties can be added if needed in the future.
  * Class Job
@@ -11,6 +14,7 @@ class Job
 {
     /**
      * @var string
+     * @SerializedName("job_id")
      */
     private $jobId;
 
@@ -26,11 +30,13 @@ class Job
 
     /**
      * @var DateTime
+     * @SerializedName("completed_at")
      */
     private $completedAt;
 
     /**
      * @var DateTime
+     * @SerializedName("created_at")
      */
     private $createdAt;
 

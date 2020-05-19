@@ -142,10 +142,10 @@ class PartnerizeClient
     /**
      * @param string $id
      *
-     * @return ResponseInterface
+     * @return Response
      * @throws ClientException
      */
-    public function getJobResponse(string $id): ResponseInterface
+    public function getJobResponse(string $id): Response
     {
         try {
             $response = $this->apiClient->request(
@@ -155,6 +155,13 @@ class PartnerizeClient
         } catch (GuzzleException $exception) {
             throw new ClientException($exception->getMessage(), 0, $exception);
         }
+
+        $this->checkStatusCode($response);
+
+        $json = $response->getBody()->getContents();
+
+        /** @var Response $response */
+        $response = $this->serializer->deserialize($json, Response::class, 'json');
 
         return $response;
     }

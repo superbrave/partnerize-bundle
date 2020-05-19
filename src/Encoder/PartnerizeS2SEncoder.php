@@ -11,7 +11,7 @@ use Symfony\Component\Serializer\Encoder\EncoderInterface;
  */
 class PartnerizeS2SEncoder implements EncoderInterface
 {
-    public const FORMAT = 'parterize_s2s';
+    public const FORMAT = 'partnerize_s2s';
 
     /**
      * {@inheritDoc}

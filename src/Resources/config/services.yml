@@ -64,7 +64,7 @@ services:
         class: Symfony\Component\Serializer\Serializer
         arguments:
             - [ '@partnerize_date_time_normalizer', '@partnerize_object_normalizer' ]
-            - [ partnerize_s2s: '@Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder', '@partnerize_json_encoder' ]
+            - [ '@Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder', '@partnerize_json_encoder' ]
 
     Superbrave\PartnerizeBundle\Client\PartnerizeClient:
         arguments:

@@ -13,9 +13,24 @@ class Response
     private $executionTime;
 
     /**
-     * @var Job
+     * @var Job|null
      */
     private $job;
+
+    /**
+     * @var array|null
+     */
+    private $conversionItems;
+
+    /**
+     * @var array|null
+     */
+    private $errors;
+
+    /**
+     * @var int|null
+     */
+    private $errorsCount;
 
     /**
      * @return string
@@ -34,18 +49,66 @@ class Response
     }
 
     /**
-     * @return Job
+     * @return Job|null
      */
-    public function getJob(): Job
+    public function getJob(): ?Job
     {
         return $this->job;
     }
 
     /**
-     * @param Job $job
+     * @param Job|null $job
      */
-    public function setJob(Job $job): void
+    public function setJob(?Job $job): void
     {
         $this->job = $job;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getConversionItems(): ?array
+    {
+        return $this->conversionItems;
+    }
+
+    /**
+     * @param array|null $conversionItems
+     */
+    public function setConversionItems(?array $conversionItems): void
+    {
+        $this->conversionItems = $conversionItems;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getErrors(): ?array
+    {
+        return $this->errors;
+    }
+
+    /**
+     * @param array|null $errors
+     */
+    public function setErrors(?array $errors): void
+    {
+        $this->errors = $errors;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getErrorsCount(): ?int
+    {
+        return $this->errorsCount;
+    }
+
+    /**
+     * @param int|null $errorsCount
+     */
+    public function setErrorsCount(?int $errorsCount): void
+    {
+        $this->errorsCount = $errorsCount;
     }
 }

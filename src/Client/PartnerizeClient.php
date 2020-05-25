@@ -116,7 +116,7 @@ class PartnerizeClient
      */
     public function rejectConversion(string $conversionId, string $reason): Job
     {
-        return $this->setConversionStatus($conversionId, self::STATUS_REJECTED);
+        return $this->setConversionStatus($conversionId, self::STATUS_REJECTED, $reason);
     }
 
     /**
@@ -225,9 +225,9 @@ class PartnerizeClient
 
         $json = $response->getBody()->getContents();
 
-        /** @var Response $response */
-        $response = $this->serializer->deserialize($json, Response::class, 'json');
+        /** @var Response $partnerizeResponse */
+        $partnerizeResponse = $this->serializer->deserialize($json, Response::class, 'json');
 
-        return $response->getJob();
+        return $partnerizeResponse->getJob();
     }
 }

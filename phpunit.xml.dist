@@ -19,7 +19,11 @@
             <directory>src/</directory>
             <exclude>
                 <directory>src/DependencyInjection</directory>
+                <directory>src/Model</directory>
             </exclude>
         </whitelist>
     </filter>
+    <logging>
+        <log type="coverage-html" target="coverage" lowUpperBound="70" highLowerBound="80" />
+    </logging>
 </phpunit>

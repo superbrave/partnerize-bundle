@@ -12,13 +12,85 @@ use Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder;
 class PartnerizeS2SEncoderTest extends TestCase
 {
     /**
+     * @var PartnerizeS2SEncoder
+     */
+    private $encoder;
+
+    /**
+     * Setup class variables for testing
+     */
+    public function setUp(): void
+    {
+        $this->encoder = new PartnerizeS2SEncoder();
+    }
+
+    /**
+     * Clear class variables after testing
+     */
+    public function breakDown(): void
+    {
+        $this->encoder = null;
+    }
+
+    /**
+     * Test that everything properly encodes
+     *
      * @dataProvider encodingDataProvider
      */
     public function testEncoding($data, $expectedResult)
     {
-        $encoder = new PartnerizeS2SEncoder();
-        $result = $encoder->encode($data, PartnerizeS2SEncoder::FORMAT, []);
+        $result = $this->encoder->encode($data, PartnerizeS2SEncoder::FORMAT, []);
         $this->assertEquals($expectedResult, $result);
+    }
+
+    /**
+     * Test that the support method only returns true on proper format
+     *
+     * @dataProvider formatDataProvider
+     */
+    public function testSupportsEncodingReturnsBoolean($encoding, $expected): void
+    {
+        $result = $this->encoder->supportsEncoding($encoding);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test that the encoder throws a RuntimeException on bad input data
+     */
+    public function testRuntimeExceptionIfDataNotArrayOnEncoding(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Expected first parameter to be an array, but got string.');
+
+        $this->encoder->encode('test', 'json');
+    }
+
+    /**
+     * Test that the encoder throws a RuntimeException on unnormalized data
+     */
+    public function testRuntimeExceptionIfValueNotScalarOnEncoding(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Value for test has not been normalized properly.');
+
+        $this->encoder->encode(['test' => []], 'json');
+    }
+
+    /**
+     * @return array
+     */
+    public function formatDataProvider(): array
+    {
+        return [
+            [
+                PartnerizeS2SEncoder::FORMAT,
+                true
+            ],
+            [
+                'notSupportedEncoding',
+                false
+            ]
+        ];
     }
 
     /**
@@ -60,7 +132,7 @@ class PartnerizeS2SEncoderTest extends TestCase
             [
                 ['abc' => null, 'def' => 123, 'ghi' => null, 'jkl' => 456, 'mno' => null],
                 'def:123/jkl:456',
-            ]
+            ],
         ];
     }
 }

@@ -79,7 +79,7 @@ class PartnerizeClientTest extends TestCase
     }
 
     /**
-     * Test happy path of creating a conversion
+     * Test happy path of createConversion
      */
     public function testCreateConversion(): void
     {
@@ -103,7 +103,7 @@ class PartnerizeClientTest extends TestCase
     }
 
     /**
-     * Test that creating a conversion returns an empty response, meaning it did not create a conversion
+     * Test that createConversion returns an empty Response, meaning it did not create a conversion
      */
     public function testCreateConversionReturnsEmptyResponse(): void
     {
@@ -127,7 +127,7 @@ class PartnerizeClientTest extends TestCase
     }
 
     /**
-     * Test that creating a conversion throws a client exception when it catches a guzzle exception
+     * Test that createConversion throws a ClientException when it catches a GuzzleException
      */
     public function testCreateConversionThrowsClientException(): void
     {
@@ -150,7 +150,7 @@ class PartnerizeClientTest extends TestCase
     }
 
     /**
-     * Test happy path of approving a conversion
+     * Test happy path of approveConversion
      */
     public function testApproveConversion(): void
     {
@@ -186,7 +186,7 @@ class PartnerizeClientTest extends TestCase
     }
 
     /**
-     * Test that approving a conversion throws a client exception when it catches a guzzle exception
+     * Test that approveConversion throws a ClientException when it catches a GuzzleException
      */
     public function testApproveConversionThrowsClientException(): void
     {
@@ -200,7 +200,7 @@ class PartnerizeClientTest extends TestCase
     }
 
     /**
-     * Test that approving a conversion throws a client exception when it receives a response with a bad status code
+     * Test that approveConversion throws a ClientException when it receives a response with a bad status code
      */
     public function testApproveConversionThrowsClientExceptionOnBadStatusCode(): void
     {
@@ -227,7 +227,10 @@ class PartnerizeClientTest extends TestCase
         $this->partnerizeClient->approveConversion('testId');
     }
 
-    public function testJobReturnedOnReject(): void
+    /**
+     * Test happy path of rejectConversion
+     */
+    public function testRejectConversion(): void
     {
         $response = new Response(200);
         $expectedJob = new Job();
@@ -255,33 +258,56 @@ class PartnerizeClientTest extends TestCase
             ->method('deserialize')
             ->willReturn($partnerizeResponse);
 
-        $client = new PartnerizeClient($this->trackingClient, $this->apiClient, $this->campaignId, $this->serializer);
-        $job = $client->rejectConversion('testId', 'testReason');
+        $job = $this->partnerizeClient->rejectConversion('testId', 'testReason');
 
         $this->assertEquals($expectedJob, $job);
     }
 
     /**
-     * Test that the client throws a ClientException when a GuzzleException is caught in the getJobUpdate method
+     * Test that rejectConversion throws a ClientException when it catches a GuzzleException
      */
-    public function testGuzzleExceptionThrowsClientExceptionOnGetJobUpdate(): void
+    public function testRejectConversionThrowsClientException(): void
     {
         $this->apiClient
             ->expects($this->once())
             ->method('request')
-            ->willThrowException(new InvalidArgumentException('Exception returned'));
+            ->willThrowException(new TransferException());
 
         $this->expectException(ClientException::class);
-        $this->expectExceptionMessage('Exception returned');
-
-        $client = new PartnerizeClient($this->trackingClient, $this->apiClient, $this->campaignId, $this->serializer);
-        $client->getJobUpdate('testId');
+        $this->partnerizeClient->rejectConversion('testId', 'testReason');
     }
 
     /**
-     * Test that the client returns a Job model from the getJobUpdate method
+     * Test that rejectConversion throws a ClientException when it receives a response with a bad status code
      */
-    public function testJobReturnedOnGetJobUpdate(): void
+    public function testRejectConversionThrowsClientExceptionOnBadStatusCode(): void
+    {
+        $response = new Response(500);
+
+        $this->apiClient
+            ->expects($this->once())
+            ->method('request')
+            ->with('POST', 'campaign/' . $this->campaignId . '/conversion', [
+                'json' => [
+                    'conversions' => [
+                        [
+                            'conversion_id' => 'testId',
+                            'status' => 'rejected',
+                            'reject_reason' => 'testReason',
+                        ]
+                    ]
+                ]
+            ])
+            ->willReturn($response);
+
+        $this->expectException(ClientException::class);
+        $this->partnerizeClient->rejectConversion('testId', 'testReason');
+    }
+
+    /**
+     * Test happy path of getJobUpdate
+     */
+    public function testGetJobUpdate(): void
     {
         $response = new Response(200);
         $expectedJob = new Job();
@@ -299,33 +325,29 @@ class PartnerizeClientTest extends TestCase
             ->method('deserialize')
             ->willReturn($partnerizeResponse);
 
-        $client = new PartnerizeClient($this->trackingClient, $this->apiClient, $this->campaignId, $this->serializer);
-        $job = $client->getJobUpdate('testId');
+        $job = $this->partnerizeClient->getJobUpdate('testId');
 
         $this->assertEquals($expectedJob, $job);
     }
 
     /**
-     * Test that the client throws a ClientException when a GuzzleException is caught in the getJobResponse method
+     * Test that getJobUpdate throws a ClientException when it catches a GuzzleException
      */
-    public function testGuzzleExceptionThrowsClientExceptionOnGetJobResponse(): void
+    public function testGetJobUpdateThrowsClientException(): void
     {
         $this->apiClient
             ->expects($this->once())
             ->method('request')
-            ->willThrowException(new InvalidArgumentException('Exception returned'));
+            ->willThrowException(new TransferException());
 
         $this->expectException(ClientException::class);
-        $this->expectExceptionMessage('Exception returned');
-
-        $client = new PartnerizeClient($this->trackingClient, $this->apiClient, $this->campaignId, $this->serializer);
-        $client->getJobResponse('testId');
+        $this->partnerizeClient->getJobUpdate('testId');
     }
 
     /**
-     * Test that the client returns a Job model from the getJobResponse method
+     * Test happy path of getJobResponse
      */
-    public function testResponseReturnedOnGetJobResponse(): void
+    public function testGetJobResponse(): void
     {
         $response = new Response(200);
         $expectedPartnerizeResponse = new PartnerizeResponse();
@@ -341,9 +363,22 @@ class PartnerizeClientTest extends TestCase
             ->method('deserialize')
             ->willReturn($expectedPartnerizeResponse);
 
-        $client = new PartnerizeClient($this->trackingClient, $this->apiClient, $this->campaignId, $this->serializer);
-        $partnerizeResponse = $client->getJobResponse('testId');
+        $partnerizeResponse = $this->partnerizeClient->getJobResponse('testId');
 
         $this->assertEquals($expectedPartnerizeResponse, $partnerizeResponse);
+    }
+
+    /**
+     * Test that getJobResponse throws a ClientException when it catches a GuzzleException
+     */
+    public function testGetJobResponseThrowsClientException(): void
+    {
+        $this->apiClient
+            ->expects($this->once())
+            ->method('request')
+            ->willThrowException(new TransferException());
+
+        $this->expectException(ClientException::class);
+        $this->partnerizeClient->getJobResponse('testId');
     }
 }

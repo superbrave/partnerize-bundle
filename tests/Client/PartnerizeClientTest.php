@@ -79,57 +79,80 @@ class PartnerizeClientTest extends TestCase
     }
 
     /**
-     * Test that a bad status code from the guzzle client will throw an exception on approving a conversion
+     * Test happy path of creating a conversion
      */
-    public function testBadStatusCodeThrowsExceptionOnStatusRequest(): void
+    public function testCreateConversion(): void
     {
-        $response = new Response(500);
+        $sale = new Sale('clickReference', 'conversionReference');
 
-        $this->apiClient
+        $this->serializer
+            ->expects($this->once())
+            ->method('serialize')
+            ->with($sale, PartnerizeS2SEncoder::FORMAT)
+            ->willReturn('ApiData');
+
+        $response = new Response(200, [], 'AShinyNewConversionId');
+        $this->trackingClient
             ->expects($this->once())
             ->method('request')
-            ->with('POST', 'campaign/' . $this->campaignId . '/conversion', [
-                'json' => [
-                    'conversions' => [
-                        [
-                            'conversion_id' => 'testId',
-                            'status' => 'approved',
-                            'reject_reason' => '',
-                        ]
-                    ]
-                ]
-            ])
+            ->with('GET', 'ApiData')
             ->willReturn($response);
 
-        $client = new PartnerizeClient($this->trackingClient, $this->apiClient, $this->campaignId, $this->serializer);
-
-        $this->expectException(ClientException::class);
-        $this->expectExceptionMessage('Received bad status code (should be 200)');
-
-        $client->approveConversion('testId');
+        $conversionId = $this->partnerizeClient->createConversion($sale);
+        $this->assertEquals('AShinyNewConversionId', $conversionId);
     }
 
     /**
-     * Test that a GuzzleException will convert to a ClientException
+     * Test that creating a conversion returns an empty response, meaning it did not create a conversion
      */
-    public function testGuzzleExceptionThrowsClientExceptionOnStatusRequest(): void
+    public function testCreateConversionReturnsEmptyResponse(): void
     {
-        $this->apiClient
+        $sale = new Sale('clickReference', 'conversionReference');
+
+        $this->serializer
+            ->expects($this->once())
+            ->method('serialize')
+            ->with($sale, PartnerizeS2SEncoder::FORMAT)
+            ->willReturn('ApiData');
+
+        $response = new Response(200, [], '');
+        $this->trackingClient
             ->expects($this->once())
             ->method('request')
-            ->willThrowException(new InvalidArgumentException('Exception returned'));
+            ->with('GET', 'ApiData')
+            ->willReturn($response);
 
-        $this->expectException(ClientException::class);
-        $this->expectExceptionMessage('Exception returned');
-
-        $client = new PartnerizeClient($this->trackingClient, $this->apiClient, $this->campaignId, $this->serializer);
-        $client->approveConversion('testId');
+        $conversionId = $this->partnerizeClient->createConversion($sale);
+        $this->assertEmpty($conversionId);
     }
 
     /**
-     * Test that a good status code from the guzzle client will return nothing on approving a conversion
+     * Test that creating a conversion throws a client exception when it catches a guzzle exception
      */
-    public function testJobReturnedOnApprove(): void
+    public function testCreateConversionThrowsClientException(): void
+    {
+        $sale = new Sale('clickReference', 'conversionReference');
+
+        $this->serializer
+            ->expects($this->once())
+            ->method('serialize')
+            ->with($sale, PartnerizeS2SEncoder::FORMAT)
+            ->willReturn('ApiData');
+
+        $this->trackingClient
+            ->expects($this->once())
+            ->method('request')
+            ->with('GET', 'ApiData')
+            ->willThrowException(new TransferException());
+
+        $this->expectException(ClientException::class);
+        $this->partnerizeClient->createConversion($sale);
+    }
+
+    /**
+     * Test happy path of approving a conversion
+     */
+    public function testApproveConversion(): void
     {
         $response = new Response(200);
         $expectedJob = new Job();
@@ -157,10 +180,51 @@ class PartnerizeClientTest extends TestCase
             ->method('deserialize')
             ->willReturn($partnerizeResponse);
 
-        $client = new PartnerizeClient($this->trackingClient, $this->apiClient, $this->campaignId, $this->serializer);
-        $job = $client->approveConversion('testId');
+        $job = $this->partnerizeClient->approveConversion('testId');
 
         $this->assertEquals($expectedJob, $job);
+    }
+
+    /**
+     * Test that approving a conversion throws a client exception when it catches a guzzle exception
+     */
+    public function testApproveConversionThrowsClientException(): void
+    {
+        $this->apiClient
+            ->expects($this->once())
+            ->method('request')
+            ->willThrowException(new TransferException());
+
+        $this->expectException(ClientException::class);
+        $this->partnerizeClient->approveConversion('testId');
+    }
+
+    /**
+     * Test that approving a conversion throws a client exception when it receives a response with a bad status code
+     */
+    public function testApproveConversionThrowsClientExceptionOnBadStatusCode(): void
+    {
+        $response = new Response(500);
+
+        $this->apiClient
+            ->expects($this->once())
+            ->method('request')
+            ->with('POST', 'campaign/' . $this->campaignId . '/conversion', [
+                'json' => [
+                    'conversions' => [
+                        [
+                            'conversion_id' => 'testId',
+                            'status' => 'approved',
+                            'reject_reason' => '',
+                        ]
+                    ]
+                ]
+            ])
+            ->willReturn($response);
+
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('Received bad status code (should be 200)');
+        $this->partnerizeClient->approveConversion('testId');
     }
 
     public function testJobReturnedOnReject(): void
@@ -195,55 +259,6 @@ class PartnerizeClientTest extends TestCase
         $job = $client->rejectConversion('testId', 'testReason');
 
         $this->assertEquals($expectedJob, $job);
-    }
-
-    /**
-     * Test that the create conversion call returns the api response body.
-     *
-     * @throws ClientException
-     */
-    public function testCreateConversionSuccess(): void
-    {
-        $sale = new Sale('clickReference', 'conversionReference');
-
-        $this->serializer
-            ->expects($this->once())
-            ->method('serialize')
-            ->with($sale, PartnerizeS2SEncoder::FORMAT)
-            ->willReturn('ApiData');
-
-        $response = new Response(200, [], 'AShinyNewConversionId');
-        $this->trackingClient
-            ->expects($this->once())
-            ->method('request')
-            ->with('GET', 'ApiData')
-            ->willReturn($response);
-
-        $conversionId = $this->partnerizeClient->createConversion($sale);
-        $this->assertEquals('AShinyNewConversionId', $conversionId);
-    }
-
-    /**
-     * Test that the client throws client exceptions and doesnt "leak" guzzle exceptions.
-     */
-    public function testCreateConversionError(): void
-    {
-        $sale = new Sale('clickReference', 'conversionReference');
-
-        $this->serializer
-            ->expects($this->once())
-            ->method('serialize')
-            ->with($sale, PartnerizeS2SEncoder::FORMAT)
-            ->willReturn('ApiData');
-
-        $this->trackingClient
-            ->expects($this->once())
-            ->method('request')
-            ->with('GET', 'ApiData')
-            ->willThrowException(new TransferException());
-
-        $this->expectException(ClientException::class);
-        $this->partnerizeClient->createConversion($sale);
     }
 
     /**

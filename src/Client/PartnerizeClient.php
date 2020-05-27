@@ -116,7 +116,7 @@ class PartnerizeClient
      */
     public function rejectConversion(string $conversionId, string $reason): Job
     {
-        return $this->setConversionStatus($conversionId, self::STATUS_REJECTED);
+        return $this->setConversionStatus($conversionId, self::STATUS_REJECTED, $reason);
     }
 
     /**
@@ -136,7 +136,7 @@ class PartnerizeClient
             throw new ClientException($exception->getMessage(), 0, $exception);
         }
 
-        return $this->deserializeJob($response);
+        return $this->getResponse($response)->getJob();
     }
 
     /**
@@ -156,14 +156,7 @@ class PartnerizeClient
             throw new ClientException($exception->getMessage(), 0, $exception);
         }
 
-        $this->checkStatusCode($response);
-
-        $json = $response->getBody()->getContents();
-
-        /** @var Response $response */
-        $response = $this->serializer->deserialize($json, Response::class, 'json');
-
-        return $response;
+        return $this->getResponse($response);
     }
 
     /**
@@ -198,7 +191,7 @@ class PartnerizeClient
             throw new ClientException($exception->getMessage(), 0, $exception);
         }
 
-        return $this->deserializeJob($response);
+        return $this->getResponse($response)->getJob();
     }
 
     /**
@@ -214,20 +207,22 @@ class PartnerizeClient
     }
 
     /**
+     * Extract and deserialize the Response object from the ResponseInterface
+     *
      * @param ResponseInterface $response
      *
-     * @return Job
+     * @return Response
      * @throws ClientException
      */
-    private function deserializeJob(ResponseInterface $response): Job
+    private function getResponse(ResponseInterface $response): Response
     {
         $this->checkStatusCode($response);
 
         $json = $response->getBody()->getContents();
 
-        /** @var Response $response */
-        $response = $this->serializer->deserialize($json, Response::class, 'json');
+        /** @var Response $partnerizeResponse */
+        $partnerizeResponse = $this->serializer->deserialize($json, Response::class, 'json');
 
-        return $response->getJob();
+        return $partnerizeResponse;
     }
 }

@@ -30,11 +30,25 @@ services:
         arguments:
             - '@partnerize_class_metadata_factory'
 
+    partnerize_php_doc_extractor:
+        class: Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor
+
+    partnerize_reflection_extractor:
+        class: Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor
+
+    partnerize_property_info_extractor:
+        class: Symfony\Component\PropertyInfo\PropertyInfoExtractor
+        arguments:
+            - []
+            - ['@partnerize_php_doc_extractor', '@partnerize_reflection_extractor']
+
     partnerize_object_normalizer:
         class: Symfony\Component\Serializer\Normalizer\ObjectNormalizer
         arguments:
             - '@partnerize_class_metadata_factory'
             - '@partnerize_metadata_aware_name_converter'
+            - null
+            - '@partnerize_property_info_extractor'
 
     partnerize_date_time_normalizer:
         class: Symfony\Component\Serializer\Normalizer\DateTimeNormalizer
@@ -43,11 +57,14 @@ services:
 
     Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder:
 
+    partnerize_json_encoder:
+        class: Symfony\Component\Serializer\Encoder\JsonEncoder
+
     partnerize_sale_serializer:
         class: Symfony\Component\Serializer\Serializer
         arguments:
             - [ '@partnerize_date_time_normalizer', '@partnerize_object_normalizer' ]
-            - partnerize_s2s: '@Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder'
+            - [ '@Superbrave\PartnerizeBundle\Encoder\PartnerizeS2SEncoder', '@partnerize_json_encoder' ]
 
     Superbrave\PartnerizeBundle\Client\PartnerizeClient:
         arguments:

@@ -37,27 +37,16 @@ class PartnerizeS2SEncoderTest extends TestCase
      *
      * @dataProvider encodingDataProvider
      */
-    public function testEncoding($data, $expectedResult)
+    public function testEncode($data, $expectedResult)
     {
         $result = $this->encoder->encode($data, PartnerizeS2SEncoder::FORMAT, []);
         $this->assertEquals($expectedResult, $result);
     }
 
     /**
-     * Test that the support method only returns true on proper format
-     *
-     * @dataProvider formatDataProvider
-     */
-    public function testSupportsEncodingReturnsBoolean($encoding, $expected): void
-    {
-        $result = $this->encoder->supportsEncoding($encoding);
-        $this->assertEquals($expected, $result);
-    }
-
-    /**
      * Test that the encoder throws a RuntimeException on bad input data
      */
-    public function testRuntimeExceptionIfDataNotArrayOnEncoding(): void
+    public function testEncodeThrowsRuntimeExceptionIfDataNotAnArray(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Expected first parameter to be an array, but got string.');
@@ -68,12 +57,23 @@ class PartnerizeS2SEncoderTest extends TestCase
     /**
      * Test that the encoder throws a RuntimeException on unnormalized data
      */
-    public function testRuntimeExceptionIfValueNotScalarOnEncoding(): void
+    public function testEncodeThrowsRuntimeExceptionWhenDataValueIsNotScalar(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Value for test has not been normalized properly.');
 
         $this->encoder->encode(['test' => []], 'json');
+    }
+
+    /**
+     * Test that the support method only returns true on proper format
+     *
+     * @dataProvider formatDataProvider
+     */
+    public function testSupportsEncoding($encoding, $expected): void
+    {
+        $result = $this->encoder->supportsEncoding($encoding);
+        $this->assertEquals($expected, $result);
     }
 
     /**

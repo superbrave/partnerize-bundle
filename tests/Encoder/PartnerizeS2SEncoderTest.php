@@ -57,7 +57,7 @@ class PartnerizeS2SEncoderTest extends TestCase
     /**
      * Test that the encoder throws a RuntimeException on unnormalized data
      */
-    public function testEncodeThrowsRuntimeExceptionWhenDataValueIsNotScalar(): void
+    public function testEncodeThrowsRuntimeExceptionIfDataValueIsNotScalar(): void
     {
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Value for test has not been normalized properly.');

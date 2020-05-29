@@ -165,7 +165,7 @@ class PartnerizeHandler
             $response = $this->client->getJobResponse($job->getJobId());
     
             // Use $response->getErrors() and $response->getErrorsCount() to check for any errors
-            // Use $response->getConversionItems() to the conversion that was approved, if it is
+            // Use $response->getConversionItems() to get the conversion that was approved, if it is
             // empty your conversion was already approved (or rejected).
         } else {
             // Wait some time and check again with getJobUpdate()

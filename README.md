@@ -57,6 +57,8 @@ superbrave_partnerize:
     application_key: 'YOUR_APPLICATION_KEY'
     user_api_key: 'YOUR_USER_API_KEY'
     campaign_id: 'YOUR_CAMPAIGN_ID'
+    base_uri: (optional, default 'https://api.partnerize.com/')
+    tracking_uri: (optional, default 'https://prf.hn/conversion/')
 ```
 
 ## Usage
@@ -124,6 +126,58 @@ by calling the `getJobResponse` method. This method once again, only takes the `
 
 This method will return a `Response` object containing any `errors` and/or `conversionItems` that are
 returned after the `Job` has done its work.
+
+## Example
+
+The Partnerize Client can be autowired into a class if that is enabled in your application.
+```php
+class PartnerizeHandler
+{
+    private $client;
+
+    public function __construct(Superbrave\PartnerizeBundle\Client\PartnerizeClient $client)
+    {
+        $this->client = $client;     
+    }
+
+    public function sendConversionToPartnerize(): void
+    {
+        $item = new Superbrave\PartnerizeBundle\Model\Item('yourCategory', 1 /* quantity */);
+        $item->setProductBrand('productBrand');
+        $item->setProductName('productName');
+        $item->setProductType('productType');
+        $item->setSku('productSku');
+        $item->setValue(10.00);
+    
+        $sale = new Superbrave\PartnerizeBundle\Model\Sale('yourClickReference', 'yourConversionReference');
+        $sale->setConversionTime(new \DateTime());
+        $sale->setCountry('NL');
+        $sale->setCurrency('EUR');
+        $sale->setCustomerReference('customer123456')
+        $sale->setCustomerType(Superbrave\PartnerizeBundle\Model\Sale::CUSTOMERTYPE_NEW);
+        $sale->setVoucher('yourVoucherCode');
+        $sale->addItem($item);
+        
+        $conversionId = $this->client->createConversion($sale);
+        $job = $this->client->approveConversion($conversionId);
+        
+        if ($job->getStatus() === Superbrave\PartnerizeBundle\Model\Job::STATUS_COMPLETE) {
+            $response = $this->client->getJobResponse($job->getJobId());
+    
+            // Use $response->getErrors() and $response->getErrorsCount() to check for any errors
+            // Use $response->getConversionItems() to the conversion that was approved, if it is
+            // empty your conversion was already approved (or rejected).
+        } else {
+            // Wait some time and check again with getJobUpdate()
+        }
+    }
+}
+```
+
+## API
+
+If you need any more information or want to contribute to this client,
+you can go to the [Partnerize API documentation](https://performancehorizon.docs.apiary.io/).
 
 ## License
 

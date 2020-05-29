@@ -9,6 +9,10 @@ namespace Superbrave\PartnerizeBundle\Model;
  */
 class Job
 {
+    public const STATUS_COMPLETE = 'complete',
+                 STATUS_CREATED = 'created',
+                 STATUS_ACTIVE = 'active';
+
     /**
      * @var string
      */
